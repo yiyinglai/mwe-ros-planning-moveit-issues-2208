@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- World version -->
+  <arg name="world" default="empty" />
+
+  <!-- Location -->
+  <arg name="x" value="0" unless="$(eval world == 'fridge')" />
+  <arg name="y" value="0" unless="$(eval world == 'fridge')" />
+  <arg name="Y" value="0" unless="$(eval world == 'fridge')" />
+  <arg name="x" value="-3.9" if="$(eval world == 'fridge')" />
+  <arg name="y" value="2.7" if="$(eval world == 'fridge')" />
+  <arg name="Y" value="3.14159265359" if="$(eval world == 'fridge')" />
+
+  <!-- Gazebo worlds -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" if="$(eval world == 'empty')" />
+  <include file="$(find fetchit_worlds)/launch/coca_cola.launch" if="$(eval world == 'cola')" />
+  <include file="$(find fetchit_worlds)/launch/fridge.launch" if="$(eval world == 'fridge')" />
+  <include file="$(find fetchit_worlds)/launch/office_small.launch" if="$(eval world == 'office')" />
+
+  <!-- URDF -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find niryo_one_description)/urdf/niryo_one.urdf.xacro stand_alone:=true" />
+
+  <!-- Load gazebo controller configurations -->
+  <rosparam file="$(find niryo_one_gazebo)/config/niryo_one_gazebo_controllers.yaml" command="load" />
+
+  <!-- Gazebo model - add a delay to let the controller start properly -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+    args="-param robot_description -urdf -x $(arg x) -y $(arg y) -Y $(arg Y) -model niryo_one" respawn="false" output="screen"/>
+
+</launch>
